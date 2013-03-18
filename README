@@ -1,0 +1,3 @@
+V8-Asterisk is an open source to provide ability to program dialplan on Asterisk using Javascript.
+
+For this reason, V8-Asterisk depend directly on Google V8 Javascript engine and Asterisk Free PBX.
