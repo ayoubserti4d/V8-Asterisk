@@ -1,3 +1,24 @@
 V8-Asterisk is an open source to provide ability to program dialplan on Asterisk using Javascript.
 
 For this reason, V8-Asterisk depend directly on Google V8 Javascript engine and Asterisk Free PBX.
+
+to compile app_execjs.cpp:
+gcc -c -o app_execjs.o  -Wall  -Iinclude  -D_REENTRANT -D_GNU_SOURCE  -march=i686 -DCRYPTO  app_execjs.cpp
+
+link with libv8.a and output a shared object:
+gcc -o app_execjs.so -Bstatic -lv8  -shared -Xlinker -x app_execjs.o 
+
+copy app_execjs.so to asterisk modules' directory
+install -m 755 app_execjs.so /usr/lib/asterisk/modules/
+
+
+In this configuration: i have compiled v8 on a static lib (libv8.a), and put app_execjs.cpp in the same folder as v8 code source's.
+-Iinclude means that we some of used header are in ./include  directory.
+
+-D_REENTRANT ,-DCRYPTO and -D_GNU_SOURCE are macros for Asterisk compilation's
+
+-march=i686 for archi compilation, use can use whatever archi do you have.
+
+
+
+
