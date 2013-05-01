@@ -1,0 +1,25 @@
+
+Note that app_execjs.so isn't a real world application, it's only for demonstration.
+
+To test this one:
+
+in extensions.conf:
+
+exten => 555,1,Answer()
+exten => 555,2,ExecJS(/tmp/test.js)
+exten => 555,n,handup()
+
+in /tmp/test.js :
+
+testFunction()
+{
+    playback("pbx-invalid");
+    dial("SIP/1001");
+}
+testFunction();
+
+
+At this moment only 3 asterisk applications can be called from Javascript layer: Echo , PlayBack and Dial.
+
+However you can add other functions that pointe to other asterisk applications'.
+
