@@ -75,7 +75,7 @@ static int execjs_exec(struct ast_channel *chan, void *data)
 	v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
 	global->Set(v8::String::New("echo"), v8::FunctionTemplate::New(Echo));
 	global->Set(v8::String::New("playback"), v8::FunctionTemplate::New(PlayBack));
-	global->Set(v8::String::New("dial"), v8::FunctionTemplate::New(dial));
+	global->Set(v8::String::New("dial"), v8::FunctionTemplate::New(Dial));
 	v8::Handle<v8::Context> context = v8::Context::New(NULL, global);
 	v8::Context::Scope context_scope(context);
 
