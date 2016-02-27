@@ -1,14 +1,12 @@
-/*
-* Asterisk -- A telephony toolkit for Linux.
-*
-* Echo application -- play back what you hear to evaluate latency
-* 
-* Copyright (C) 1999, Mark Spencer
-*
-* Mark Spencer <markster@linux-support.net>
-*
-* This program is free software, distributed under the terms of
-* the GNU General Public License
+/* \brief
+   @author Ayoub Serti
+   @email ayb.serti@gmail.com
+   @file app_execjs.cpp
+   @description
+   	PoC Asterisk Application to create&execute DialPlan using JavaScript.
+   	Remember this implementation is a just for demo purpose and it can never be used in production environment.
+   	In Fact, we assume that ExecJS() is called by only one thread/caller; this assumption can be clearly identified when you look at 
+   	`Globalchan` variable.
 */
 extern "C"
 {
@@ -30,6 +28,10 @@ extern "C"
 #include <v8.h>
 //ASTERISK_FILE_VERSION(__FILE__, "$Revision: 360033 $")
 
+
+/**
+ *  \@brief Ast application definitation 
+**/
 struct ast_app {
 	char name[AST_MAX_APP];			
 	int (*execute)(struct ast_channel *chan, void *data);
@@ -47,7 +49,7 @@ static char *app = "ExecJS";
 
 static char *synopsis = "Execute Javascript Code";
 
-static char *descrip = "ExecJS(): disallocate Extensions configuration from extensions.conf file.";
+static char *descrip = "ExecJS(): Execute Dialplan from JS File.";
 
 
 v8::Handle<v8::Value> Echo(const v8::Arguments& args);
@@ -62,10 +64,14 @@ bool ExecuteString(v8::Handle<v8::String> source, v8::Handle<v8::Value> name, bo
 struct ast_channel *Globalchan=NULL;
 void *Globaldata = NULL;
 
+/*
+ * \brief excejs_exec: function invoked by ExecJS() application
+ * \param chan	asterisk channel that invoke ExecJS()
+ * \param data  argumented 
+ * \return 0 is Ok, elsewhere a non-null value
+*/
 static int execjs_exec(struct ast_channel *chan, void *data)
 {
-
-	//ast_log (LOG_NOTICE, "Hello world");
 	Globalchan = chan;
 	Globaldata = data;
 	char *str = (char*)data;
@@ -94,16 +100,24 @@ static int execjs_exec(struct ast_channel *chan, void *data)
 		}
 	}
 
-	//ast_verbose ("\n %d \n" , result);	
-
-
-	return 1;
+	return 0;
 }
 
+/**
+ * \brief  ToCString 	utility function to convert a Utf8Value String to char ptr
+ * \param  value	Utf8Value String value
+ * \return		inner char ptr
+ * \caution		never delete return'd ptr
+*/
 const char* ToCString(const v8::String::Utf8Value& value) {
 	return *value ? *value : "<string conversion failed>";
 }
 
+/**
+ * \brief  Echo 	`echo` application wrapper. This is function callback invoked when JS Dialplan find a echo() function
+ * \param  args		JS Object arguments; args[0] -> `this` context
+ * \return 		not really relevant ;)
+*/
 v8::Handle<v8::Value> Echo(const v8::Arguments& args) {
 
 	ast_app* mAstApp = pbx_findapp("echo");
@@ -124,6 +138,10 @@ v8::Handle<v8::Value> Echo(const v8::Arguments& args) {
 	return v8::Undefined();
 }
 
+/**
+ * \brief  PlayBack	playback application invoker
+ * (same as echo function)
+*/
 v8::Handle<v8::Value> PlayBack(const v8::Arguments& args) {
 
 	ast_app* mAstApp = pbx_findapp("playback");
@@ -145,6 +163,7 @@ v8::Handle<v8::Value> PlayBack(const v8::Arguments& args) {
 
 	return v8::Undefined();
 }
+
 v8::Handle<v8::Value> Dial(const v8::Arguments& args) {
 
 	ast_app* mAstApp = pbx_findapp("dial");
@@ -168,6 +187,7 @@ v8::Handle<v8::Value> Dial(const v8::Arguments& args) {
 }
 
 
+//------ Internal functions
 
 // Reads a file into a v8 string.
 v8::Handle<v8::String> ReadFile(const char* name) {
@@ -221,12 +241,21 @@ bool ExecuteString(v8::Handle<v8::String> source,  v8::Handle<v8::Value> name, b
 	}
 }
 
+
+/**
+ * \brief unload_module 
+ * 		invoked by Asterisk when user/developer Unload App module from CLI
+*/
 int unload_module(void)
 {
 
 	return ast_unregister_application(app);
 }
 
+/**
+ * \brief load_module
+ * 		module load start up
+*/
 int load_module(void)
 {
 	return ast_register_application(app, execjs_exec,synopsis ,descrip);
